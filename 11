@@ -1,0 +1,62 @@
+#加载
+
+library(Seurat)
+library(data.table)
+library(stringr)
+library(tibble)
+
+#工作目录
+
+setwd("D:/CPU/生信/GSE234527")
+
+#获取数据文件夹下的所有样本文件列表
+
+samples<-list.files("D:/CPU/生信/GSE234527_RAW")
+samples
+
+#处理第一批数据
+
+samples
+sample = samples[1]
+
+#创建一个空列表
+
+seurat_list<-list()
+
+for (sample in samples) {
+#文件路径
+
+data.path<-paste0("D:/CPU/生信/GSE234527_RAW/", sample)
+data.path
+
+#读取10x数据
+
+seurat_data<-Read10X(data.dir = data.path)
+
+#创建seurat对象
+#删除小于200个基因表达的细胞和小于3个细胞表达的基因
+
+seurat_obj<-CreateSeuratObject(counts=seurat_data,project = sample, min.features = 200,min.cells = 3)
+
+#添加到列表中
+
+seurat_list<-append(seurat_list, seurat_obj)
+}
+
+#合并
+
+seurat_combined<-merge(seurat_list[[1]],
+                       y=seurat_list[-1],
+                       add.cell.ids=samples)
+
+
+#将layers融合
+
+pbmc=JoinLayers(seurat_combined)
+
+
+
+
+
+
+
